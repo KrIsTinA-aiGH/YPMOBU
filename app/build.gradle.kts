@@ -1,3 +1,10 @@
+buildscript {
+    repositories {
+        google()
+        mavenCentral()
+    }
+}
+
 plugins {
     alias(libs.plugins.android.application)
     alias(libs.plugins.kotlin.android)
@@ -48,6 +55,13 @@ dependencies {
     implementation(libs.androidx.compose.ui)
     implementation(libs.androidx.compose.ui.graphics)
     implementation(libs.androidx.compose.ui.tooling.preview)
+
+// Сетевое взаимодействие (Retrofit)
+    implementation("com.squareup.retrofit2:retrofit:2.11.0")
+    implementation("com.squareup.retrofit2:converter-gson:2.11.0")
+// Асинхронные операции (Корутины)
+    implementation("org.jetbrains.kotlinx:kotlinx-coroutines-android:1.8.0")
+
     implementation(libs.androidx.compose.material3)
     testImplementation(libs.junit)
     androidTestImplementation(libs.androidx.junit)
