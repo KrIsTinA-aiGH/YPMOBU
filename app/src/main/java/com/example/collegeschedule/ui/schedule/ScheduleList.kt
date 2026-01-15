@@ -14,7 +14,7 @@ import androidx.compose.ui.unit.dp
 import com.example.collegeschedule.data.dto.ScheduleByDateDto
 
 @Composable
-fun ScheduleList(data: List<ScheduleByDateDto>) {
+fun ScheduleList(data: List<ScheduleByDateDto>, modifier: Modifier) {
     LazyColumn(modifier = Modifier.padding(8.dp)) {
         items(data) { day ->
             Text(
@@ -48,6 +48,7 @@ fun ScheduleList(data: List<ScheduleByDateDto>) {
                         }
                     }
                 }
+
             }
         }
     }

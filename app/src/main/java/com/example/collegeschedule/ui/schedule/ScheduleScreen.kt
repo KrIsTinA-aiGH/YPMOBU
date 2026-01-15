@@ -8,12 +8,13 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
+import androidx.compose.ui.Modifier
+import com.example.collegeschedule.data.api.RetrofitInstance
 import com.example.collegeschedule.data.dto.ScheduleByDateDto
-import com.example.collegeschedule.data.network.RetrofitInstance
 import com.example.collegeschedule.utils.getWeekDateRange
 
 @Composable
-fun ScheduleScreen() {
+fun ScheduleScreen(modifier: Modifier = Modifier) {
     var schedule by remember { mutableStateOf<List<ScheduleByDateDto>>(emptyList()) }
     var loading by remember { mutableStateOf(true) }
     var error by remember { mutableStateOf<String?>(null) }
@@ -22,7 +23,7 @@ fun ScheduleScreen() {
         val (start, end) = getWeekDateRange()
         try {
             schedule = RetrofitInstance.api.getSchedule(
-                groupName = "ИС-12", // ЗАМЕНИ НА РЕАЛЬНУЮ ГРУППУ ИЗ ТВОЕЙ БАЗЫ!
+                groupName = "ИС-12",
                 start = start,
                 end = end
             )
@@ -34,8 +35,8 @@ fun ScheduleScreen() {
     }
 
     when {
-        loading -> CircularProgressIndicator()
-        error != null -> Text("Ошибка: $error")
-        else -> ScheduleList(schedule)
+        loading -> CircularProgressIndicator(modifier = modifier)
+        error != null -> Text("Ошибка: $error", modifier = modifier)
+        else -> ScheduleList(data = schedule, modifier = modifier)
     }
 }

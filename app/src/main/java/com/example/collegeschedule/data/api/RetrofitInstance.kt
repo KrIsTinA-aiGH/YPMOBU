@@ -1,6 +1,5 @@
-package com.example.collegeschedule.data.network
+package com.example.collegeschedule.data.api
 
-import com.example.collegeschedule.data.api.ScheduleApi
 import retrofit2.Retrofit
 import retrofit2.converter.gson.GsonConverterFactory
 
