@@ -14,7 +14,8 @@ class FavoriteRepository(private val context: Context) {
     // Добавить группу в избранное
     fun addToFavorites(group: GroupDto) {
         val favorites = getFavoritesSet().toMutableSet()
-        favorites.add("${group.groupId}$SEPARATOR${group.groupName}")
+        // Сохраняем все данные: id, название, специальность, курс
+        favorites.add("${group.groupId}$SEPARATOR${group.groupName}$SEPARATOR${group.specialty}$SEPARATOR${group.course}")
         saveFavorites(favorites)
     }
 
@@ -30,11 +31,23 @@ class FavoriteRepository(private val context: Context) {
         val favoritesSet = getFavoritesSet()
         return favoritesSet.mapNotNull { serialized ->
             val parts = serialized.split(SEPARATOR)
-            if (parts.size == 2) {
+            // Теперь ожидаем 4 части: id, название, специальность, курс
+            if (parts.size == 4) {
+                val groupId = parts[0].toIntOrNull()
+                val groupName = parts[1]
+                val specialty = parts[2]
+                val course = parts[3].toIntOrNull() ?: 1
+                if (groupId != null) {
+                    GroupDto(groupId, groupName, course, specialty)
+                } else {
+                    null
+                }
+            } else if (parts.size == 2) {
+                // Совместимость со старым форматом (только id и название)
                 val groupId = parts[0].toIntOrNull()
                 val groupName = parts[1]
                 if (groupId != null) {
-                    GroupDto(groupId, groupName)
+                    GroupDto(groupId, groupName, 1, "Не указано")
                 } else {
                     null
                 }

@@ -10,6 +10,7 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -29,34 +30,27 @@ import com.example.collegeschedule.utils.getWeekDateRange
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun ScheduleScreen(modifier: Modifier = Modifier) {
+fun ScheduleScreen(
+    modifier: Modifier = Modifier,
+    preselectedGroup: GroupDto? = null,  // ← ДОБАВЛЕНО
+    onPreselectedGroupShown: () -> Unit = {}  // ← ДОБАВЛЕНО
+) {
     // Состояния
     var schedule by remember { mutableStateOf<List<ScheduleByDateDto>>(emptyList()) }
     var groups by remember { mutableStateOf<List<GroupDto>>(emptyList()) }
     var selectedGroup by remember { mutableStateOf<GroupDto?>(null) }
-    var loading by remember { mutableStateOf(true) }
+    var loadingGroups by remember { mutableStateOf(true) }
+    var loadingSchedule by remember { mutableStateOf(false) }
     var error by remember { mutableStateOf<String?>(null) }
 
-    // Функция для загрузки расписания конкретной группы
-    @Composable
-    fun LoadScheduleForGroup(group: GroupDto?) {
-        if (group == null) return
-
-        LaunchedEffect(group.groupId) {
-            loading = true
-            error = null
-            try {
-                val (start, end) = getWeekDateRange()
-                schedule = RetrofitInstance.api.getSchedule(
-                    groupName = group.groupName,
-                    start = start,
-                    end = end
-                )
-            } catch (e: Exception) {
-                error = "Ошибка загрузки расписания: ${e.message}"
-                schedule = emptyList()
-            } finally {
-                loading = false
+    // Обработка предварительно выбранной группы
+    LaunchedEffect(preselectedGroup, groups) {
+        if (preselectedGroup != null && groups.isNotEmpty() && selectedGroup?.groupId != preselectedGroup.groupId) {
+            // Находим полный объект группы в списке
+            val fullGroup = groups.find { it.groupId == preselectedGroup.groupId }
+            if (fullGroup != null) {
+                selectedGroup = fullGroup
+                onPreselectedGroupShown() // Уведомляем, что группа показана
             }
         }
     }
@@ -65,23 +59,33 @@ fun ScheduleScreen(modifier: Modifier = Modifier) {
     LaunchedEffect(Unit) {
         try {
             groups = RetrofitInstance.api.getAllGroups()
-
-            // Автоматически выбираем первую группу
-            if (groups.isNotEmpty()) {
-                selectedGroup = groups[0]
-            } else {
-                error = "Нет доступных групп"
-            }
-            loading = false
+            loadingGroups = false
         } catch (e: Exception) {
             error = "Ошибка загрузки групп: ${e.message}"
-            loading = false
+            loadingGroups = false
         }
     }
 
-    // Загружаем расписание при изменении выбранной группы
-    if (selectedGroup != null) {
-        LoadScheduleForGroup(selectedGroup)
+    // Загрузка расписания при изменении выбранной группы
+    LaunchedEffect(selectedGroup?.groupId) {
+        val group = selectedGroup ?: return@LaunchedEffect
+
+        loadingSchedule = true
+        error = null
+
+        try {
+            val (start, end) = getWeekDateRange()
+            schedule = RetrofitInstance.api.getSchedule(
+                groupName = group.groupName,
+                start = start,
+                end = end
+            )
+        } catch (e: Exception) {
+            error = "Ошибка загрузки расписания: ${e.message}"
+            schedule = emptyList()
+        } finally {
+            loadingSchedule = false
+        }
     }
 
     Box(
@@ -103,16 +107,20 @@ fun ScheduleScreen(modifier: Modifier = Modifier) {
                 modifier = Modifier.fillMaxWidth()
             )
 
-            Spacer(modifier = Modifier.height(16.dp))
+            Spacer(modifier = Modifier.height(24.dp))
 
             // Отображение состояния
             when {
-                loading -> {
+                loadingGroups -> {
                     Box(
                         modifier = Modifier.fillMaxSize(),
                         contentAlignment = Alignment.Center
                     ) {
-                        CircularProgressIndicator()
+                        Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                            CircularProgressIndicator()
+                            Spacer(modifier = Modifier.height(16.dp))
+                            Text(text = "Загрузка списка групп...")
+                        }
                     }
                 }
 
@@ -130,7 +138,29 @@ fun ScheduleScreen(modifier: Modifier = Modifier) {
                         modifier = Modifier.fillMaxSize(),
                         contentAlignment = Alignment.Center
                     ) {
-                        Text(text = "Выберите группу")
+                        Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                            Text(
+                                text = "Выберите группу из списка",
+                                modifier = Modifier.padding(bottom = 8.dp)
+                            )
+                            Text(
+                                text = "Расписание появится здесь",
+                                style = MaterialTheme.typography.bodySmall
+                            )
+                        }
+                    }
+                }
+
+                loadingSchedule -> {
+                    Box(
+                        modifier = Modifier.fillMaxSize(),
+                        contentAlignment = Alignment.Center
+                    ) {
+                        Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                            CircularProgressIndicator()
+                            Spacer(modifier = Modifier.height(16.dp))
+                            Text(text = "Загрузка расписания для ${selectedGroup?.groupName} (${selectedGroup?.specialty})...")
+                        }
                     }
                 }
 
@@ -139,7 +169,7 @@ fun ScheduleScreen(modifier: Modifier = Modifier) {
                         modifier = Modifier.fillMaxSize(),
                         contentAlignment = Alignment.Center
                     ) {
-                        Text(text = "Расписание для группы ${selectedGroup?.groupName ?: ""} не найдено")
+                        Text(text = "Расписание для группы ${selectedGroup?.groupName ?: ""} (${selectedGroup?.specialty ?: ""}) не найдено")
                     }
                 }
 

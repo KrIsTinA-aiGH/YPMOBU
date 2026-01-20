@@ -1,5 +1,6 @@
 package com.example.collegeschedule.ui.components
 
+import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
@@ -11,6 +12,7 @@ import androidx.compose.material3.ExposedDropdownMenuBox
 import androidx.compose.material3.ExposedDropdownMenuDefaults
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextField
 import androidx.compose.runtime.Composable
@@ -56,7 +58,7 @@ fun GroupDropdown(
             verticalAlignment = Alignment.CenterVertically
         ) {
             TextField(
-                value = selectedGroup?.groupName ?: "Выберите группу",
+                value = selectedGroup?.let { "${it.groupName} (${it.specialty})" } ?: "Выберите группу",
                 onValueChange = {},
                 readOnly = true,
                 trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(expanded = expanded) },
@@ -108,10 +110,19 @@ fun GroupDropdown(
                                 verticalAlignment = Alignment.CenterVertically,
                                 modifier = Modifier.fillMaxWidth()
                             ) {
-                                Text(
-                                    text = group.groupName,
+                                Column(
                                     modifier = Modifier.weight(1f)
-                                )
+                                ) {
+                                    Text(
+                                        text = group.groupName,
+                                        style = MaterialTheme.typography.bodyMedium
+                                    )
+                                    Text(
+                                        text = group.specialty,
+                                        style = MaterialTheme.typography.bodySmall,
+                                        color = androidx.compose.ui.graphics.Color.Gray
+                                    )
+                                }
 
                                 // Кнопка избранного в выпадающем списке
                                 IconButton(

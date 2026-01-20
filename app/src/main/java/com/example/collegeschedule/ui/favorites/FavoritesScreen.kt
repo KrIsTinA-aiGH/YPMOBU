@@ -1,6 +1,5 @@
 package com.example.collegeschedule.ui.favorites
 
-import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -31,7 +30,10 @@ import com.example.collegeschedule.data.dto.GroupDto
 import com.example.collegeschedule.storage.FavoriteRepository
 
 @Composable
-fun FavoritesScreen(modifier: Modifier = Modifier) {
+fun FavoritesScreen(
+    modifier: Modifier = Modifier,
+    onGroupSelected: (GroupDto) -> Unit = {}
+) {
     val context = LocalContext.current
     val favoriteRepository = remember { FavoriteRepository(context) }
 
@@ -106,7 +108,8 @@ fun FavoritesScreen(modifier: Modifier = Modifier) {
                         FavoriteGroupCard(
                             group = group,
                             favoriteRepository = favoriteRepository,
-                            onRemoved = { refreshFavorites() }
+                            onRemoved = { refreshFavorites() },
+                            onClick = { onGroupSelected(group) }
                         )
                     }
                 }
@@ -119,19 +122,21 @@ fun FavoritesScreen(modifier: Modifier = Modifier) {
 fun FavoriteGroupCard(
     group: GroupDto,
     favoriteRepository: FavoriteRepository,
-    onRemoved: () -> Unit
+    onRemoved: () -> Unit,
+    onClick: (GroupDto) -> Unit
 ) {
     Card(
         modifier = Modifier
             .fillMaxWidth()
-            .padding(vertical = 4.dp)
+            .padding(vertical = 4.dp),
+        onClick = { onClick(group) }
     ) {
         Column(
             modifier = Modifier
                 .fillMaxWidth()
                 .padding(16.dp)
         ) {
-            Row(
+            androidx.compose.foundation.layout.Row(
                 verticalAlignment = Alignment.CenterVertically,
                 modifier = Modifier.fillMaxWidth()
             ) {
@@ -143,8 +148,14 @@ fun FavoriteGroupCard(
                         style = MaterialTheme.typography.titleMedium
                     )
                     Text(
-                        text = "ID: ${group.groupId}",
-                        style = MaterialTheme.typography.bodySmall
+                        text = group.specialty,
+                        style = MaterialTheme.typography.bodySmall,
+                        color = androidx.compose.ui.graphics.Color.Gray
+                    )
+                    Text(
+                        text = "Курс: ${group.course}",
+                        style = MaterialTheme.typography.bodySmall,
+                        color = androidx.compose.ui.graphics.Color.Gray
                     )
                 }
 

@@ -7,8 +7,8 @@ import androidx.activity.enableEdgeToEdge
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.AccountBox
-import androidx.compose.material.icons.filled.Favorite
 import androidx.compose.material.icons.filled.Home
+import androidx.compose.material.icons.filled.Star
 import androidx.compose.material3.Icon
 import androidx.compose.material3.NavigationBar
 import androidx.compose.material3.NavigationBarItem
@@ -21,6 +21,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.vector.ImageVector
+import com.example.collegeschedule.data.dto.GroupDto
 import com.example.collegeschedule.ui.favorites.FavoritesScreen
 import com.example.collegeschedule.ui.schedule.ScheduleScreen
 import com.example.collegeschedule.ui.theme.CollegeScheduleTheme
@@ -40,6 +41,8 @@ class MainActivity : ComponentActivity() {
 @Composable
 fun CollegeScheduleApp() {
     var currentDestination by remember { mutableStateOf(AppDestinations.HOME) }
+    // ИСПРАВЛЕНО: правильный синтаксис remember
+    var selectedGroupForSchedule by remember { mutableStateOf<GroupDto?>(null) }
 
     Scaffold(
         bottomBar = {
@@ -56,9 +59,27 @@ fun CollegeScheduleApp() {
         }
     ) { innerPadding ->
         when (currentDestination) {
-            AppDestinations.HOME -> ScheduleScreen(Modifier.padding(innerPadding))
-            AppDestinations.FAVORITES -> FavoritesScreen(Modifier.padding(innerPadding))
-            AppDestinations.PROFILE -> Text("Профиль студента", modifier = Modifier.padding(innerPadding))
+            AppDestinations.HOME -> ScheduleScreen(
+                modifier = Modifier.padding(innerPadding),
+                preselectedGroup = selectedGroupForSchedule,
+                onPreselectedGroupShown = { selectedGroupForSchedule = null }
+            )
+
+            AppDestinations.FAVORITES -> {
+                // УБРАН ЛИШНИЙ Text - оставляем только FavoritesScreen
+                FavoritesScreen(
+                    modifier = Modifier.padding(innerPadding),
+                    onGroupSelected = { group ->
+                        selectedGroupForSchedule = group
+                        currentDestination = AppDestinations.HOME
+                    }
+                )
+            }
+
+            AppDestinations.PROFILE -> Text(
+                "Профиль студента",
+                modifier = Modifier.padding(innerPadding)
+            )
         }
     }
 }
@@ -68,6 +89,6 @@ enum class AppDestinations(
     val icon: ImageVector,
 ) {
     HOME("Главная", Icons.Default.Home),
-    FAVORITES("Избранное", Icons.Default.Favorite),
+    FAVORITES("Избранное", Icons.Default.Star),
     PROFILE("Профиль", Icons.Default.AccountBox),
 }
