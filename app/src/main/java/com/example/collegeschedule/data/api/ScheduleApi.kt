@@ -1,5 +1,6 @@
 package com.example.collegeschedule.data.api
 
+import com.example.collegeschedule.data.dto.GroupDto
 import com.example.collegeschedule.data.dto.ScheduleByDateDto
 import retrofit2.http.GET
 import retrofit2.http.Path
@@ -12,4 +13,6 @@ interface ScheduleApi {
         @Query("start") start: String,
         @Query("end") end: String
     ): List<ScheduleByDateDto>
+    @GET("api/Groups")
+    suspend fun getAllGroups(): List<GroupDto>
 }
