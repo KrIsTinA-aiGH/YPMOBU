@@ -27,12 +27,14 @@ import androidx.compose.ui.unit.dp
 import com.example.collegeschedule.data.dto.LessonGroupPart
 import com.example.collegeschedule.data.dto.ScheduleByDateDto
 
+//список расписания на несколько дней
 @Composable
 fun ScheduleList(
     data: List<ScheduleByDateDto>,
     modifier: Modifier = Modifier
 ) {
     if (data.isEmpty()) {
+        //состояние пустого расписания
         Box(
             modifier = Modifier
                 .fillMaxWidth()
@@ -49,25 +51,27 @@ fun ScheduleList(
         return
     }
 
+    //ленивый столбец для дней недели
     LazyColumn(
         modifier = modifier,
-        verticalArrangement = Arrangement.spacedBy(24.dp)
+        verticalArrangement = Arrangement.spacedBy(24.dp) //отступы между днями
     ) {
         items(data) { day ->
-            DayScheduleSection(day = day)
+            DayScheduleSection(day = day) //секция на день
         }
     }
 }
 
+//секция расписания на один день
 @Composable
 private fun DayScheduleSection(day: ScheduleByDateDto) {
     Column(modifier = Modifier.padding(horizontal = 16.dp)) {
-        // Заголовок дня
+        //заголовок дня
         Row(
             modifier = Modifier.fillMaxWidth(),
             verticalAlignment = Alignment.CenterVertically
         ) {
-            // Цветная полоска дня
+            //цветная полоска дня
             Box(
                 modifier = Modifier
                     .width(4.dp)
@@ -79,7 +83,7 @@ private fun DayScheduleSection(day: ScheduleByDateDto) {
             Spacer(modifier = Modifier.width(12.dp))
 
             Text(
-                text = day.weekday,
+                text = day.weekday, //день недели
                 style = MaterialTheme.typography.titleLarge.copy(fontWeight = FontWeight.SemiBold),
                 color = MaterialTheme.colorScheme.onSurface
             )
@@ -87,7 +91,7 @@ private fun DayScheduleSection(day: ScheduleByDateDto) {
             Spacer(modifier = Modifier.width(8.dp))
 
             Text(
-                text = day.lessonDate,
+                text = day.lessonDate, //дата
                 style = MaterialTheme.typography.bodyMedium,
                 color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.7f)
             )
@@ -96,17 +100,20 @@ private fun DayScheduleSection(day: ScheduleByDateDto) {
         Spacer(modifier = Modifier.height(16.dp))
 
         if (day.lessons.isEmpty()) {
+            //нет занятий в этот день
             NoLessonsCard()
         } else {
+            //список занятий на день
             Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
                 day.lessons.forEach { lesson ->
-                    LessonCard(lesson = lesson)
+                    LessonCard(lesson = lesson) //карточка занятия
                 }
             }
         }
     }
 }
 
+//карточка занятия (пары)
 @Composable
 private fun LessonCard(lesson: com.example.collegeschedule.data.dto.LessonDto) {
     Card(
@@ -119,20 +126,20 @@ private fun LessonCard(lesson: com.example.collegeschedule.data.dto.LessonDto) {
         shape = RoundedCornerShape(12.dp)
     ) {
         Column(modifier = Modifier.padding(16.dp)) {
-            // Верхняя строка: номер пары и время
+            //верхняя строка: номер пары и время
             Row(
                 modifier = Modifier.fillMaxWidth(),
                 horizontalArrangement = Arrangement.SpaceBetween,
                 verticalAlignment = Alignment.CenterVertically
             ) {
                 Text(
-                    text = "Пара ${lesson.lessonNumber}",
+                    text = "Пара ${lesson.lessonNumber}", //номер пары
                     style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.SemiBold),
                     color = MaterialTheme.colorScheme.primary
                 )
 
                 Text(
-                    text = lesson.time,
+                    text = lesson.time, //время пары
                     style = MaterialTheme.typography.bodyMedium,
                     color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.8f)
                 )
@@ -140,14 +147,14 @@ private fun LessonCard(lesson: com.example.collegeschedule.data.dto.LessonDto) {
 
             Spacer(modifier = Modifier.height(12.dp))
 
-            // Блоки занятий для каждой подгруппы
+            //блоки занятий для каждой подгруппы
             val groupPartsEntries = lesson.groupParts.entries.toList()
             val hasValidParts = groupPartsEntries.any { it.value != null }
 
             if (!hasValidParts) {
-                // Если нет данных о подгруппах, показываем общую информацию
+                //если нет данных о подгруппах, показываем общую информацию
                 Text(
-                    text = lesson.subject,
+                    text = lesson.subject, //предмет
                     style = MaterialTheme.typography.bodyLarge.copy(fontWeight = FontWeight.Normal),
                     maxLines = 2,
                     overflow = TextOverflow.Ellipsis
@@ -155,16 +162,16 @@ private fun LessonCard(lesson: com.example.collegeschedule.data.dto.LessonDto) {
 
                 Spacer(modifier = Modifier.height(8.dp))
 
-                LessonInfoRow(text = lesson.teacher)
+                LessonInfoRow(text = lesson.teacher) //преподаватель
                 Spacer(modifier = Modifier.height(4.dp))
-                LessonInfoRow(text = "${lesson.building}, ауд. ${lesson.classroom}")
+                LessonInfoRow(text = "${lesson.building}, ауд. ${lesson.classroom}") //аудитория
             } else {
-                // Показываем информацию по подгруппам
+                //показываем информацию по подгруппам
                 groupPartsEntries.forEachIndexed { index, (part, partInfo) ->
                     if (partInfo != null) {
                         LessonPartItem(part = part, info = partInfo)
 
-                        // Разделитель между частями (кроме последней)
+                        //разделитель между частями (кроме последней)
                         if (index < groupPartsEntries.size - 1 && groupPartsEntries[index + 1].value != null) {
                             Spacer(modifier = Modifier.height(10.dp))
                             Box(
@@ -182,13 +189,14 @@ private fun LessonCard(lesson: com.example.collegeschedule.data.dto.LessonDto) {
     }
 }
 
+//элемент занятия для подгруппы
 @Composable
 private fun LessonPartItem(
-    part: LessonGroupPart,
+    part: LessonGroupPart, //часть группы (full, sub1, sub2)
     info: com.example.collegeschedule.data.dto.LessonPartDto
 ) {
     Column {
-        // Метка подгруппы
+        //метка подгруппы
         val (partText, partColor) = when (part) {
             LessonGroupPart.FULL -> Pair(
                 "Вся группа",
@@ -212,7 +220,7 @@ private fun LessonPartItem(
 
         Spacer(modifier = Modifier.height(6.dp))
 
-        // Предмет
+        //предмет
         Text(
             text = info.subject,
             style = MaterialTheme.typography.bodyLarge.copy(fontWeight = FontWeight.Normal),
@@ -222,16 +230,17 @@ private fun LessonPartItem(
 
         Spacer(modifier = Modifier.height(6.dp))
 
-        // Преподаватель
+        //преподаватель
         LessonInfoRow(text = info.teacher)
 
         Spacer(modifier = Modifier.height(4.dp))
 
-        // Аудитория
+        //аудитория
         LessonInfoRow(text = "${info.building}, ауд. ${info.classroom}")
     }
 }
 
+//строка с информацией (преподаватель, аудитория)
 @Composable
 private fun LessonInfoRow(text: String) {
     Row(verticalAlignment = Alignment.CenterVertically) {
@@ -255,6 +264,7 @@ private fun LessonInfoRow(text: String) {
     }
 }
 
+//карточка "нет занятий"
 @Composable
 private fun NoLessonsCard() {
     Card(

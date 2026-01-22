@@ -44,7 +44,6 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import com.example.collegeschedule.data.dto.GroupDto
 import com.example.collegeschedule.storage.FavoriteRepository
-
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun GroupDropdown(
@@ -54,16 +53,17 @@ fun GroupDropdown(
     modifier: Modifier = Modifier
 ) {
     val context = LocalContext.current
+    //создаем репозиторий для избранного
     val favoriteRepository = remember { FavoriteRepository(context) }
-    var expanded by remember { mutableStateOf(false) }
-    var refreshKey by remember { mutableStateOf(0) }
+    var expanded by remember { mutableStateOf(false) } //состояние раскрытия списка
+    var refreshKey by remember { mutableStateOf(0) } //ключ для принудительной перерисовки
 
     LaunchedEffect(refreshKey) {
-        // Пустой эффект для перерисовки
+        //пустой эффект для перерисовки
     }
 
     Column(modifier = modifier) {
-        // Карточка выбранной группы
+        //карточка выбранной группы
         Card(
             modifier = Modifier.fillMaxWidth(),
             colors = CardDefaults.cardColors(
@@ -72,7 +72,7 @@ fun GroupDropdown(
             ),
             elevation = CardDefaults.cardElevation(defaultElevation = 1.dp),
             shape = RoundedCornerShape(12.dp),
-            onClick = { expanded = true }
+            onClick = { expanded = true } //при нажатии раскрываем список
         ) {
             Row(
                 modifier = Modifier
@@ -80,7 +80,7 @@ fun GroupDropdown(
                     .padding(horizontal = 16.dp, vertical = 14.dp),
                 verticalAlignment = Alignment.CenterVertically
             ) {
-                // Иконка группы
+                //иконка группы
                 Box(
                     modifier = Modifier
                         .size(40.dp)
@@ -98,7 +98,7 @@ fun GroupDropdown(
 
                 Spacer(modifier = Modifier.width(12.dp))
 
-                // Информация о группе
+                //информация о группе
                 Column(
                     modifier = Modifier.weight(1f),
                     verticalArrangement = Arrangement.Center
@@ -129,7 +129,7 @@ fun GroupDropdown(
                     }
                 }
 
-                // Кнопка избранного
+                //кнопка избранного
                 selectedGroup?.let { group ->
                     val isFavorite = favoriteRepository.isFavorite(group.groupId)
                     Box(
@@ -141,7 +141,7 @@ fun GroupDropdown(
                                 } else {
                                     favoriteRepository.addToFavorites(group)
                                 }
-                                refreshKey++
+                                refreshKey++ //обновляем ui
                             }
                             .padding(8.dp)
                     ) {
@@ -158,13 +158,13 @@ fun GroupDropdown(
 
                 Spacer(modifier = Modifier.width(8.dp))
 
-                // Стрелка раскрытия
+                //стрелка раскрытия
                 Icon(
                     imageVector = Icons.Filled.ArrowDropDown,
                     contentDescription = if (expanded) "Свернуть список" else "Раскрыть список",
                     modifier = Modifier
                         .size(24.dp)
-                        .rotate(if (expanded) 180f else 0f),
+                        .rotate(if (expanded) 180f else 0f), //анимация поворота
                     tint = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.6f)
                 )
             }
@@ -172,7 +172,7 @@ fun GroupDropdown(
 
         Spacer(modifier = Modifier.height(2.dp))
 
-        // Выпадающий список
+        //выпадающий список
         if (expanded) {
             Card(
                 modifier = Modifier.fillMaxWidth(),
@@ -183,16 +183,16 @@ fun GroupDropdown(
                 elevation = CardDefaults.cardElevation(defaultElevation = 8.dp),
                 shape = RoundedCornerShape(12.dp)
             ) {
-                // Ограничиваем максимальную высоту и добавляем прокрутку
+                //ограничиваем максимальную высоту и добавляем прокрутку
                 Box(
                     modifier = Modifier
                         .fillMaxWidth()
-                        .heightIn(max = 400.dp) // Максимальная высота
+                        .heightIn(max = 400.dp) //максимальная высота
                 ) {
                     Column(
                         modifier = Modifier
                             .fillMaxWidth()
-                            .verticalScroll(rememberScrollState()) // Добавляем прокрутку
+                            .verticalScroll(rememberScrollState()) //добавляем прокрутку
                             .padding(vertical = 8.dp),
                         verticalArrangement = Arrangement.spacedBy(1.dp)
                     ) {
@@ -210,7 +210,7 @@ fun GroupDropdown(
                                 )
                             }
                         } else {
-                            // Сначала избранные группы
+                            //сначала избранные группы
                             val favoriteGroups =
                                 groups.filter { favoriteRepository.isFavorite(it.groupId) }
                             val otherGroups =
@@ -300,7 +300,7 @@ private fun GroupDropdownItem(
                 .padding(horizontal = 12.dp, vertical = 10.dp),
             verticalAlignment = Alignment.CenterVertically
         ) {
-            // Иконка группы
+            //иконка группы
             Box(
                 modifier = Modifier
                     .size(36.dp)
@@ -312,7 +312,7 @@ private fun GroupDropdownItem(
                 contentAlignment = Alignment.Center
             ) {
                 Text(
-                    text = group.groupName.take(3),
+                    text = group.groupName.take(3), //первые 3 буквы названия группы
                     style = MaterialTheme.typography.labelSmall.copy(fontWeight = FontWeight.Medium),
                     color = if (isFavorite) MaterialTheme.colorScheme.tertiary
                     else MaterialTheme.colorScheme.onSurface.copy(alpha = 0.7f)
@@ -321,7 +321,7 @@ private fun GroupDropdownItem(
 
             Spacer(modifier = Modifier.width(12.dp))
 
-            // Информация о группе
+            //информация о группе
             Column(
                 modifier = Modifier.weight(1f),
                 verticalArrangement = Arrangement.Center
@@ -344,7 +344,7 @@ private fun GroupDropdownItem(
                 )
             }
 
-            // Кнопка избранного
+            //кнопка избранного
             Box(
                 modifier = Modifier
                     .clip(CircleShape)
@@ -354,7 +354,7 @@ private fun GroupDropdownItem(
                         } else {
                             favoriteRepository.addToFavorites(group)
                         }
-                        onFavoriteToggle()
+                        onFavoriteToggle() //обновляем состояние
                     }
                     .padding(8.dp)
             ) {

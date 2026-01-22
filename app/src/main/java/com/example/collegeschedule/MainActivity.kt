@@ -26,33 +26,36 @@ import com.example.collegeschedule.ui.favorites.FavoritesScreen
 import com.example.collegeschedule.ui.schedule.ScheduleScreen
 import com.example.collegeschedule.ui.theme.CollegeScheduleTheme
 
+//главная activity приложения
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        enableEdgeToEdge()
+        enableEdgeToEdge() //включаем edge-to-edge режим
         setContent {
             CollegeScheduleTheme {
-                CollegeScheduleApp()
+                CollegeScheduleApp() //основное приложение
             }
         }
     }
 }
 
+//основное приложение с навигацией
 @Composable
 fun CollegeScheduleApp() {
-    var currentDestination by remember { mutableStateOf(AppDestinations.HOME) }
-    // ИСПРАВЛЕНО: правильный синтаксис remember
-    var selectedGroupForSchedule by remember { mutableStateOf<GroupDto?>(null) }
+    var currentDestination by remember { mutableStateOf(AppDestinations.HOME) } //текущий экран
+    //исправлено: правильный синтаксис remember
+    var selectedGroupForSchedule by remember { mutableStateOf<GroupDto?>(null) } //выбранная группа для расписания
 
     Scaffold(
         bottomBar = {
+            //нижняя навигационная панель
             NavigationBar {
                 AppDestinations.entries.forEach { destination ->
                     NavigationBarItem(
                         icon = { Icon(destination.icon, contentDescription = destination.label) },
                         label = { Text(destination.label) },
                         selected = currentDestination == destination,
-                        onClick = { currentDestination = destination }
+                        onClick = { currentDestination = destination } //переключение экрана
                     )
                 }
             }
@@ -66,12 +69,12 @@ fun CollegeScheduleApp() {
             )
 
             AppDestinations.FAVORITES -> {
-                // УБРАН ЛИШНИЙ Text - оставляем только FavoritesScreen
+                //убран лишний text - оставляем только FavoritesScreen
                 FavoritesScreen(
                     modifier = Modifier.padding(innerPadding),
                     onGroupSelected = { group ->
                         selectedGroupForSchedule = group
-                        currentDestination = AppDestinations.HOME
+                        currentDestination = AppDestinations.HOME //переходим на главный экран
                     }
                 )
             }
@@ -84,6 +87,7 @@ fun CollegeScheduleApp() {
     }
 }
 
+//перечисление экранов приложения
 enum class AppDestinations(
     val label: String,
     val icon: ImageVector,

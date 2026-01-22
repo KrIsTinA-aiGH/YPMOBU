@@ -2,10 +2,11 @@ package com.example.collegeschedule.data.dto
 
 import kotlinx.serialization.Serializable
 
+//dto для учебной группы
 @Serializable
 data class GroupDto(
-    val groupId: Int,
-    val groupName: String,
-    val course: Int,
-    val specialty: String
+    val groupId: Int, //уникальный идентификатор группы
+    val groupName: String, //название группы
+    val course: Int, //курс обучения
+    val specialty: String //специальность
 )

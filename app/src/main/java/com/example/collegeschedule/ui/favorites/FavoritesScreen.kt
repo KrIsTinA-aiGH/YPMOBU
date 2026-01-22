@@ -29,24 +29,26 @@ import androidx.compose.ui.unit.dp
 import com.example.collegeschedule.data.dto.GroupDto
 import com.example.collegeschedule.storage.FavoriteRepository
 
+//экран избранных групп
 @Composable
 fun FavoritesScreen(
     modifier: Modifier = Modifier,
-    onGroupSelected: (GroupDto) -> Unit = {}
+    onGroupSelected: (GroupDto) -> Unit = {} //колбэк при выборе группы
 ) {
     val context = LocalContext.current
+    //создаем репозиторий для работы с избранным
     val favoriteRepository = remember { FavoriteRepository(context) }
 
-    var favorites by remember { mutableStateOf<List<GroupDto>>(emptyList()) }
-    var loading by remember { mutableStateOf(true) }
+    var favorites by remember { mutableStateOf<List<GroupDto>>(emptyList()) } //список избранных групп
+    var loading by remember { mutableStateOf(true) } //состояние загрузки
 
-    // Загружаем избранные группы при открытии экрана
+    //загружаем избранные группы при открытии экрана
     LaunchedEffect(Unit) {
         favorites = favoriteRepository.getFavorites()
         loading = false
     }
 
-    // Функция для обновления списка
+    //функция для обновления списка
     fun refreshFavorites() {
         favorites = favoriteRepository.getFavorites()
     }
@@ -57,6 +59,7 @@ fun FavoritesScreen(
             .padding(16.dp)
     ) {
         if (loading) {
+            //состояние загрузки
             Box(
                 modifier = Modifier.fillMaxSize(),
                 contentAlignment = Alignment.Center
@@ -64,6 +67,7 @@ fun FavoritesScreen(
                 Text(text = "Загрузка...")
             }
         } else if (favorites.isEmpty()) {
+            //состояние пустого списка
             Box(
                 modifier = Modifier.fillMaxSize(),
                 contentAlignment = Alignment.Center
@@ -84,6 +88,7 @@ fun FavoritesScreen(
                 }
             }
         } else {
+            //список избранных групп
             Column(
                 modifier = Modifier.fillMaxSize()
             ) {
@@ -118,18 +123,19 @@ fun FavoritesScreen(
     }
 }
 
+//карточка избранной группы
 @Composable
 fun FavoriteGroupCard(
     group: GroupDto,
     favoriteRepository: FavoriteRepository,
-    onRemoved: () -> Unit,
-    onClick: (GroupDto) -> Unit
+    onRemoved: () -> Unit, //колбэк при удалении из избранного
+    onClick: (GroupDto) -> Unit //колбэк при нажатии на карточку
 ) {
     Card(
         modifier = Modifier
             .fillMaxWidth()
             .padding(vertical = 4.dp),
-        onClick = { onClick(group) }
+        onClick = { onClick(group) } //при нажатии переходим к расписанию группы
     ) {
         Column(
             modifier = Modifier
@@ -159,10 +165,11 @@ fun FavoriteGroupCard(
                     )
                 }
 
+                //кнопка удаления из избранного
                 androidx.compose.material3.IconButton(
                     onClick = {
                         favoriteRepository.removeFromFavorites(group.groupId)
-                        onRemoved()
+                        onRemoved() //обновляем список
                     }
                 ) {
                     Icon(

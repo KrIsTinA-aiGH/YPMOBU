@@ -6,7 +6,7 @@ import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.sp
 
-// Профессиональная типографика для приложения расписания
+//профессиональная типографика для приложения расписания
 val Typography = Typography(
     displayLarge = TextStyle(
         fontFamily = FontFamily.Default,

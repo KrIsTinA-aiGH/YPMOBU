@@ -38,33 +38,34 @@ import com.example.collegeschedule.data.dto.ScheduleByDateDto
 import com.example.collegeschedule.ui.components.GroupDropdown
 import com.example.collegeschedule.utils.getWeekDateRange
 
+//главный экран с расписанием
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun ScheduleScreen(
     modifier: Modifier = Modifier,
-    preselectedGroup: GroupDto? = null,
-    onPreselectedGroupShown: () -> Unit = {}
+    preselectedGroup: GroupDto? = null, //предварительно выбранная группа
+    onPreselectedGroupShown: () -> Unit = {} //колбэк когда группа показана
 ) {
-    // Состояния
-    var schedule by remember { mutableStateOf<List<ScheduleByDateDto>>(emptyList()) }
-    var groups by remember { mutableStateOf<List<GroupDto>>(emptyList()) }
-    var selectedGroup by remember { mutableStateOf<GroupDto?>(null) }
-    var loadingGroups by remember { mutableStateOf(true) }
-    var loadingSchedule by remember { mutableStateOf(false) }
-    var error by remember { mutableStateOf<String?>(null) }
+    //состояния экрана
+    var schedule by remember { mutableStateOf<List<ScheduleByDateDto>>(emptyList()) } //расписание
+    var groups by remember { mutableStateOf<List<GroupDto>>(emptyList()) } //список групп
+    var selectedGroup by remember { mutableStateOf<GroupDto?>(null) } //выбранная группа
+    var loadingGroups by remember { mutableStateOf(true) } //загрузка групп
+    var loadingSchedule by remember { mutableStateOf(false) } //загрузка расписания
+    var error by remember { mutableStateOf<String?>(null) } //ошибка
 
-    // Обработка предварительно выбранной группы
+    //обработка предварительно выбранной группы
     LaunchedEffect(preselectedGroup, groups) {
         if (preselectedGroup != null && groups.isNotEmpty() && selectedGroup?.groupId != preselectedGroup.groupId) {
             val fullGroup = groups.find { it.groupId == preselectedGroup.groupId }
             if (fullGroup != null) {
                 selectedGroup = fullGroup
-                onPreselectedGroupShown()
+                onPreselectedGroupShown() //уведомляем что группа показана
             }
         }
     }
 
-    // Загрузка списка групп при первом запуске
+    //загрузка списка групп при первом запуске
     LaunchedEffect(Unit) {
         try {
             groups = RetrofitInstance.api.getAllGroups()
@@ -75,7 +76,7 @@ fun ScheduleScreen(
         }
     }
 
-    // Загрузка расписания при изменении выбранной группы
+    //загрузка расписания при изменении выбранной группы
     LaunchedEffect(selectedGroup?.groupId) {
         val group = selectedGroup ?: return@LaunchedEffect
 
@@ -102,7 +103,7 @@ fun ScheduleScreen(
             .fillMaxSize()
             .background(MaterialTheme.colorScheme.background)
     ) {
-        // Хедер с информацией о группе
+        //хедер с информацией о группе
         Card(
             modifier = Modifier
                 .fillMaxWidth()
@@ -119,7 +120,7 @@ fun ScheduleScreen(
                     .fillMaxWidth()
                     .padding(horizontal = 20.dp, vertical = 16.dp)
             ) {
-                // Заголовок экрана
+                //заголовок экрана
                 Text(
                     text = "Расписание занятий",
                     style = MaterialTheme.typography.titleLarge.copy(
@@ -130,7 +131,7 @@ fun ScheduleScreen(
 
                 Spacer(modifier = Modifier.height(16.dp))
 
-                // Выбор группы
+                //выбор группы
                 Text(
                     text = "Выберите группу:",
                     style = MaterialTheme.typography.bodyMedium,
@@ -147,7 +148,7 @@ fun ScheduleScreen(
                     modifier = Modifier.fillMaxWidth()
                 )
 
-                // Информация о выбранной группе
+                //информация о выбранной группе
                 selectedGroup?.let { group ->
                     Spacer(modifier = Modifier.height(12.dp))
 
@@ -193,7 +194,7 @@ fun ScheduleScreen(
 
         Spacer(modifier = Modifier.height(8.dp))
 
-        // Основное содержимое
+        //основное содержимое
         Box(
             modifier = Modifier
                 .fillMaxSize()
@@ -201,6 +202,7 @@ fun ScheduleScreen(
         ) {
             when {
                 loadingGroups -> {
+                    //загрузка групп
                     LoadingState(
                         text = "Загружаем список групп...",
                         modifier = Modifier.fillMaxSize()
@@ -208,6 +210,7 @@ fun ScheduleScreen(
                 }
 
                 error != null -> {
+                    //ошибка
                     ErrorState(
                         message = error!!,
                         modifier = Modifier.fillMaxSize()
@@ -215,6 +218,7 @@ fun ScheduleScreen(
                 }
 
                 selectedGroup == null -> {
+                    //группа не выбрана
                     EmptyState(
                         title = "Выберите группу",
                         subtitle = "Расписание появится здесь",
@@ -223,6 +227,7 @@ fun ScheduleScreen(
                 }
 
                 loadingSchedule -> {
+                    //загрузка расписания
                     LoadingState(
                         text = "Загружаем расписание для ${selectedGroup?.groupName}...",
                         modifier = Modifier.fillMaxSize()
@@ -230,6 +235,7 @@ fun ScheduleScreen(
                 }
 
                 schedule.isEmpty() -> {
+                    //расписание пустое
                     EmptyState(
                         title = "Расписание не найдено",
                         subtitle = "Для группы ${selectedGroup?.groupName ?: ""} нет занятий на эту неделю",
@@ -238,6 +244,7 @@ fun ScheduleScreen(
                 }
 
                 else -> {
+                    //отображение расписания
                     ScheduleList(
                         data = schedule,
                         modifier = Modifier.fillMaxWidth()
@@ -248,6 +255,7 @@ fun ScheduleScreen(
     }
 }
 
+//состояние загрузки
 @Composable
 private fun LoadingState(
     text: String,
@@ -277,6 +285,7 @@ private fun LoadingState(
     }
 }
 
+//состояние ошибки
 @Composable
 private fun ErrorState(
     message: String,
@@ -332,6 +341,7 @@ private fun ErrorState(
     }
 }
 
+//пустое состояние
 @Composable
 private fun EmptyState(
     title: String,
