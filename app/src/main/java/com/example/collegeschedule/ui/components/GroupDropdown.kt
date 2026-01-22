@@ -9,11 +9,14 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowDropDown
 import androidx.compose.material.icons.filled.Favorite
@@ -21,7 +24,6 @@ import androidx.compose.material.icons.filled.List
 import androidx.compose.material.icons.outlined.FavoriteBorder
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
-import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
@@ -147,7 +149,9 @@ fun GroupDropdown(
                             imageVector = if (isFavorite) Icons.Filled.Favorite else Icons.Outlined.FavoriteBorder,
                             contentDescription = if (isFavorite) "Удалить из избранного" else "Добавить в избранное",
                             modifier = Modifier.size(20.dp),
-                            tint = if (isFavorite) MaterialTheme.colorScheme.tertiary else MaterialTheme.colorScheme.onSurface.copy(alpha = 0.5f)
+                            tint = if (isFavorite) MaterialTheme.colorScheme.tertiary else MaterialTheme.colorScheme.onSurface.copy(
+                                alpha = 0.5f
+                            )
                         )
                     }
                 }
@@ -179,47 +183,86 @@ fun GroupDropdown(
                 elevation = CardDefaults.cardElevation(defaultElevation = 8.dp),
                 shape = RoundedCornerShape(12.dp)
             ) {
-                Column(
+                // Ограничиваем максимальную высоту и добавляем прокрутку
+                Box(
                     modifier = Modifier
                         .fillMaxWidth()
-                        .padding(vertical = 8.dp),
-                    verticalArrangement = Arrangement.spacedBy(1.dp)
+                        .heightIn(max = 400.dp) // Максимальная высота
                 ) {
-                    if (groups.isEmpty()) {
-                        DropdownMenuItem(
-                            text = {
+                    Column(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .verticalScroll(rememberScrollState()) // Добавляем прокрутку
+                            .padding(vertical = 8.dp),
+                        verticalArrangement = Arrangement.spacedBy(1.dp)
+                    ) {
+                        if (groups.isEmpty()) {
+                            Box(
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .padding(horizontal = 16.dp, vertical = 20.dp),
+                                contentAlignment = Alignment.Center
+                            ) {
                                 Text(
                                     text = "Нет доступных групп",
                                     style = MaterialTheme.typography.bodyMedium,
                                     color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.6f)
                                 )
-                            },
-                            onClick = {},
-                            modifier = Modifier.fillMaxWidth()
-                        )
-                    } else {
-                        // Сначала избранные группы
-                        val favoriteGroups = groups.filter { favoriteRepository.isFavorite(it.groupId) }
-                        val otherGroups = groups.filterNot { favoriteRepository.isFavorite(it.groupId) }
+                            }
+                        } else {
+                            // Сначала избранные группы
+                            val favoriteGroups =
+                                groups.filter { favoriteRepository.isFavorite(it.groupId) }
+                            val otherGroups =
+                                groups.filterNot { favoriteRepository.isFavorite(it.groupId) }
 
-                        if (favoriteGroups.isNotEmpty()) {
-                            Box(
-                                modifier = Modifier
-                                    .fillMaxWidth()
-                                    .padding(horizontal = 16.dp, vertical = 8.dp)
-                            ) {
-                                Text(
-                                    text = "Избранное",
-                                    style = MaterialTheme.typography.labelSmall,
-                                    color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.5f),
-                                    fontWeight = FontWeight.Medium
-                                )
+                            if (favoriteGroups.isNotEmpty()) {
+                                Box(
+                                    modifier = Modifier
+                                        .fillMaxWidth()
+                                        .padding(horizontal = 16.dp, vertical = 8.dp)
+                                ) {
+                                    Text(
+                                        text = "Избранное",
+                                        style = MaterialTheme.typography.labelSmall,
+                                        color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.5f),
+                                        fontWeight = FontWeight.Medium
+                                    )
+                                }
+
+                                favoriteGroups.forEach { group ->
+                                    GroupDropdownItem(
+                                        group = group,
+                                        isFavorite = true,
+                                        favoriteRepository = favoriteRepository,
+                                        onFavoriteToggle = { refreshKey++ },
+                                        onClick = {
+                                            onGroupSelected(group)
+                                            expanded = false
+                                        }
+                                    )
+                                }
+
+                                if (otherGroups.isNotEmpty()) {
+                                    Box(
+                                        modifier = Modifier
+                                            .fillMaxWidth()
+                                            .padding(horizontal = 16.dp, vertical = 8.dp)
+                                    ) {
+                                        Text(
+                                            text = "Все группы",
+                                            style = MaterialTheme.typography.labelSmall,
+                                            color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.5f),
+                                            fontWeight = FontWeight.Medium
+                                        )
+                                    }
+                                }
                             }
 
-                            favoriteGroups.forEach { group ->
+                            otherGroups.forEach { group ->
                                 GroupDropdownItem(
                                     group = group,
-                                    isFavorite = true,
+                                    isFavorite = false,
                                     favoriteRepository = favoriteRepository,
                                     onFavoriteToggle = { refreshKey++ },
                                     onClick = {
@@ -228,34 +271,6 @@ fun GroupDropdown(
                                     }
                                 )
                             }
-
-                            if (otherGroups.isNotEmpty()) {
-                                Box(
-                                    modifier = Modifier
-                                        .fillMaxWidth()
-                                        .padding(horizontal = 16.dp, vertical = 8.dp)
-                                ) {
-                                    Text(
-                                        text = "Все группы",
-                                        style = MaterialTheme.typography.labelSmall,
-                                        color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.5f),
-                                        fontWeight = FontWeight.Medium
-                                    )
-                                }
-                            }
-                        }
-
-                        otherGroups.forEach { group ->
-                            GroupDropdownItem(
-                                group = group,
-                                isFavorite = false,
-                                favoriteRepository = favoriteRepository,
-                                onFavoriteToggle = { refreshKey++ },
-                                onClick = {
-                                    onGroupSelected(group)
-                                    expanded = false
-                                }
-                            )
                         }
                     }
                 }
@@ -263,6 +278,7 @@ fun GroupDropdown(
         }
     }
 }
+
 
 @Composable
 private fun GroupDropdownItem(
